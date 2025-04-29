@@ -38,18 +38,21 @@ mkdir -p %{buildroot}%{_libexecdir}/%{name}/plugins
 install -m 0755 bin/openscap-plugin %{buildroot}%{_libexecdir}/%{name}/plugins/openscap-plugin
 mkdir -p %{buildroot}%{_datadir}/%{name}
 cp -rf docs/samples %{buildroot}%{_datadir}/%{name}
-# TODO: Manifest file, related issue: CPLYTM-682
-mkdir -p %{buildroot}%{_datadir}/%{name}/plugins
+mkdir -p %{buildroot}%{_datadir}/%{name}/plugins %{buildroot}%{_datadir}/%{name}/bundles %{buildroot}%{_datadir}/%{name}/controls
+mkdir -p %{buildroot}%{_sysconfdir}/%{name}/config.d
+
 
 %check
 make test-unit
 
 %files
-%license LICENSE
 %{_bindir}/complytime
-%doc README.md
 %defattr(-,root,root,644)
-%{_datadir}/%{name}
+%license LICENSE
+%doc README.md
+%{_libexecdir}/%{name}
+%attr(0766,root,root) %{_datadir}/%{name}
+%attr(0766,root,root) %{_sysconfdir}/%{name}/config.d
 
 %files          openscap-plugin
 %{_libexecdir}/%{name}/plugins/openscap-plugin
