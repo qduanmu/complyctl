@@ -3,6 +3,7 @@
 package complytime
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -128,7 +129,7 @@ func Plugins(manager *framework.PluginManager, inputs *actions.InputContext, sel
 	getSelections := func(pluginId plugin.ID) map[string]string {
 		return pluginSelectionsMap[pluginId]
 	}
-	plugins, err := manager.LaunchPolicyPlugins(manifests, getSelections)
+	plugins, err := manager.LaunchPolicyPlugins(context.Background(), manifests, getSelections)
 	// Plugin subprocess has now been launched; cleanup always required below
 	if err != nil {
 		return nil, manager.Clean, err

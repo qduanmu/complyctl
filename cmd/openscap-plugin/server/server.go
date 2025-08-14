@@ -4,6 +4,7 @@ package server
 
 import (
 	"bufio"
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -42,11 +43,11 @@ func New() PluginServer {
 	}
 }
 
-func (s PluginServer) Configure(configMap map[string]string) error {
+func (s PluginServer) Configure(_ context.Context, configMap map[string]string) error {
 	return s.Config.LoadSettings(configMap)
 }
 
-func (s PluginServer) Generate(policy policy.Policy) error {
+func (s PluginServer) Generate(_ context.Context, policy policy.Policy) error {
 	hclog.Default().Info("Generating a tailoring file")
 	tailoringXML, err := xccdf.PolicyToXML(policy, s.Config)
 	if err != nil {
@@ -73,7 +74,7 @@ func (s PluginServer) Generate(policy policy.Policy) error {
 	return nil
 }
 
-func (s PluginServer) GetResults(oscalPolicy policy.Policy) (policy.PVPResult, error) {
+func (s PluginServer) GetResults(_ context.Context, oscalPolicy policy.Policy) (policy.PVPResult, error) {
 	pvpResults := policy.PVPResult{}
 	policyChecks := newChecks()
 

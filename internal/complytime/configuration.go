@@ -186,7 +186,7 @@ func ActionsContextFromPlan(assessmentPlan *oscalTypes.AssessmentPlan) (*actions
 		compAdapter := components.NewSystemComponentAdapter(component)
 		allComponents = append(allComponents, compAdapter)
 	}
-	inputContext, err := actions.NewContext(allComponents)
+	inputContext, err := actions.NewContextFromComponents(allComponents)
 	if err != nil {
 		return nil, fmt.Errorf("error generating context from plan %s: %w", assessmentPlan.Metadata.Title, err)
 	}
