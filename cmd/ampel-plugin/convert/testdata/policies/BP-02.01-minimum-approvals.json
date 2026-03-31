@@ -10,7 +10,7 @@
   "tenets": [
     {
       "id": "01",
-      "code": "(has(predicates[0].data.values) && predicates[0].data.values.exists(rule, rule.type == \"pull_request\" && rule.parameters.required_approving_review_count >= 1)) || (has(predicates[0].data.approvals_before_merge) && predicates[0].data.approvals_before_merge >= 1)",
+      "code": "(has(predicates[0].data.values) && type(predicates[0].data.values) == list && predicates[0].data.values.exists(rule, rule.type == \"pull_request\" && rule.parameters.required_approving_review_count >= 1)) || (has(predicates[0].data.values.approvals_before_merge) && predicates[0].data.values.approvals_before_merge >= 1)",
       "predicates": {
         "types": [
           "http://github.com/carabiner-dev/snappy/specs/github/branch-rules.yaml",
@@ -27,7 +27,7 @@
     },
     {
       "id": "02",
-      "code": "(has(predicates[0].data.values) && predicates[0].data.values.exists(rule, rule.type == \"pull_request\" && rule.parameters.dismiss_stale_reviews_on_push == true)) || (has(predicates[0].data.reset_approvals_on_push) && predicates[0].data.reset_approvals_on_push == true)",
+      "code": "(has(predicates[0].data.values) && type(predicates[0].data.values) == list && predicates[0].data.values.exists(rule, rule.type == \"pull_request\" && rule.parameters.dismiss_stale_reviews_on_push == true)) || (has(predicates[0].data.values.reset_approvals_on_push) && predicates[0].data.values.reset_approvals_on_push == true)",
       "predicates": {
         "types": [
           "http://github.com/carabiner-dev/snappy/specs/github/branch-rules.yaml",
@@ -44,7 +44,7 @@
     },
     {
       "id": "03",
-      "code": "(has(predicates[0].data.values) && predicates[0].data.values.exists(rule, rule.type == \"pull_request\" && rule.parameters.require_last_push_approval == true)) || (has(predicates[0].data.merge_requests_disable_committers_approval) && predicates[0].data.merge_requests_disable_committers_approval == true)",
+      "code": "(has(predicates[0].data.values) && type(predicates[0].data.values) == list && predicates[0].data.values.exists(rule, rule.type == \"pull_request\" && rule.parameters.require_last_push_approval == true)) || (has(predicates[0].data.values.merge_requests_disable_committers_approval) && predicates[0].data.values.merge_requests_disable_committers_approval == true)",
       "predicates": {
         "types": [
           "http://github.com/carabiner-dev/snappy/specs/github/branch-rules.yaml",

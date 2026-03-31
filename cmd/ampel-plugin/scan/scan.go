@@ -1,10 +1,11 @@
 package scan
 
 import (
-	_ "embed"
+	"embed"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/fs"
 	"net/url"
 	"os"
 	"os/exec"
@@ -24,17 +25,8 @@ type RepoTarget struct {
 	Platform    string // "github" or "gitlab"
 }
 
-//go:embed specs/github/branch-rules.yaml
-var githubBranchRulesSpec []byte
-
-//go:embed specs/gitlab/branch-protection.yaml
-var gitlabBranchProtectionSpec []byte
-
-// GitHubSpecFile is the filename for the GitHub branch rules spec.
-const GitHubSpecFile = "branch-rules.yaml"
-
-// GitLabSpecFile is the filename for the GitLab branch protection spec.
-const GitLabSpecFile = "branch-protection.yaml"
+//go:embed specs
+var embeddedSpecs embed.FS
 
 // ScanConfig holds configuration for scanning a repository.
 type ScanConfig struct {
@@ -91,31 +83,45 @@ func buildTokenEnv(repo RepoTarget) []string {
 	return filtered
 }
 
-// WriteSpecFiles writes the embedded spec files to the given directory.
+// WriteSpecFiles writes all embedded spec files to the given directory.
+// It automatically discovers and writes all spec files from the embedded FS,
+// preserving the directory structure (e.g., specs/github/*.yaml, specs/gitlab/*.yaml).
 func WriteSpecFiles(specDir string) error {
-	// Create GitHub spec directory and write spec file
-	githubDir := filepath.Join(specDir, "github")
-	if err := os.MkdirAll(githubDir, 0750); err != nil {
-		return fmt.Errorf("creating github spec directory %s: %w", githubDir, err)
-	}
+	return fs.WalkDir(embeddedSpecs, "specs", func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
 
-	githubSpecPath := filepath.Join(githubDir, GitHubSpecFile)
-	if err := os.WriteFile(githubSpecPath, githubBranchRulesSpec, 0600); err != nil {
-		return fmt.Errorf("writing github spec file %s: %w", githubSpecPath, err)
-	}
+		// Skip the root "specs" directory itself
+		if path == "specs" {
+			return nil
+		}
 
-	// Create GitLab spec directory and write spec file
-	gitlabDir := filepath.Join(specDir, "gitlab")
-	if err := os.MkdirAll(gitlabDir, 0750); err != nil {
-		return fmt.Errorf("creating gitlab spec directory %s: %w", gitlabDir, err)
-	}
+		// Get relative path from "specs/" (e.g., "github/branch-rules.yaml")
+		relPath := strings.TrimPrefix(path, "specs/")
+		targetPath := filepath.Join(specDir, relPath)
 
-	gitlabSpecPath := filepath.Join(gitlabDir, GitLabSpecFile)
-	if err := os.WriteFile(gitlabSpecPath, gitlabBranchProtectionSpec, 0600); err != nil {
-		return fmt.Errorf("writing gitlab spec file %s: %w", gitlabSpecPath, err)
-	}
+		if d.IsDir() {
+			// Create directory
+			if err := os.MkdirAll(targetPath, 0750); err != nil {
+				return fmt.Errorf("creating spec directory %s: %w", targetPath, err)
+			}
+			return nil
+		}
 
-	return nil
+		// Read embedded file content
+		content, err := embeddedSpecs.ReadFile(path)
+		if err != nil {
+			return fmt.Errorf("reading embedded spec %s: %w", path, err)
+		}
+
+		// Write to target location
+		if err := os.WriteFile(targetPath, content, 0600); err != nil {
+			return fmt.Errorf("writing spec file %s: %w", targetPath, err)
+		}
+
+		return nil
+	})
 }
 
 // ResolveSpecPath resolves a spec reference to an absolute path.
